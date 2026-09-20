@@ -162,10 +162,7 @@ The development setup is **CachyOS / KDE Plasma 6 / Wayland**, **OpenLinkHub
 The panel matched the detailed API across a reconnect jump, and a later source
 decrease was observed. These observations are not calibration testing.
 
-**1.3.0's icon presentation is a local test build until its new display has been
-checked on the desktop.** Automated parser, mocked-request, threshold and source
-checks pass; they do not instantiate Plasma, validate QML bindings/rendering, or
-measure physical battery charge. See [CHANGELOG.md](CHANGELOG.md).
+Version 1.3.0 has been tested on the development system with KDE Plasma 6. The three-level battery indicator, physical mute/unmute indicator, headset off/disconnected state, reconnect behavior, and click-to-open OpenLinkHub behavior were verified on a Corsair Virtuoso XT Wireless. The battery bands reflect OpenLinkHub's reported estimate and are not independent calibration testing. Automated parser, mocked-request, threshold, and source checks also pass; those tests do not measure physical battery charge or establish compatibility with other hardware.
 
 Before publishing a release, recheck the new battery icon, physical mute, off
 state, reconnect, unavailable state, and click-to-open. Record what was actually
