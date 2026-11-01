@@ -15,6 +15,33 @@ PlasmoidItem {
     readonly property bool showDisconnected: batteryDisplay.band === "disconnected"
     readonly property bool showMuteIndicator: hub.connected && hub.muteStatus !== 0
     readonly property string hubUrl: "http://127.0.0.1:27003/"
+    // Only show a number when the same freshness and connection checks used
+    // by the coloured panel indicator have succeeded.
+    readonly property string hoverBattery: batteryDisplay.bars > 0
+        ? String(hub.batteryLevel) + "% (OpenLinkHub estimate; " + batteryDisplay.label + ")"
+        : batteryDisplay.label
+    readonly property string hoverStatus: hub.connectionState === "error"
+        ? "OpenLinkHub status unavailable. Check whether its service is running."
+        : hub.detail
+
+    // Virtuoso XT service recovery actions (optional handler)
+    Plasmoid.contextualActions: [
+        PlasmaCore.Action {
+            text: "Start OpenLinkHub (administrator)"
+            icon.name: "media-playback-start"
+            onTriggered: Qt.openUrlExternally("virtuosoxt-service://start")
+        },
+        PlasmaCore.Action {
+            text: "Restart OpenLinkHub (administrator)"
+            icon.name: "view-refresh"
+            onTriggered: Qt.openUrlExternally("virtuosoxt-service://restart")
+        },
+        PlasmaCore.Action {
+            text: "Enable at Startup and Start (administrator)"
+            icon.name: "system-run"
+            onTriggered: Qt.openUrlExternally("virtuosoxt-service://enable")
+        }
+    ]
 
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     preferredRepresentation: fullRepresentation
@@ -29,7 +56,7 @@ PlasmoidItem {
             ? "\nLast successful API response: "
                 + Qt.formatTime(new Date(hub.lastStatusAt), "hh:mm:ss") : "")
         + "\nReads OpenLinkHub every 2 seconds; device reports may update less often."
-        + "\nClick to open OpenLinkHub. Virtuoso XT Plasma Widget 1.3.0."
+        + "\nClick to open OpenLinkHub. Virtuoso XT Plasma Widget 1.4.0."
 
     HubStatus {
         id: hub
@@ -69,6 +96,20 @@ PlasmoidItem {
         onClicked: Qt.openUrlExternally(root.hubUrl)
         Keys.onReturnPressed: Qt.openUrlExternally(root.hubUrl)
         Keys.onSpacePressed: Qt.openUrlExternally(root.hubUrl)
+
+        // Explicit tooltip hover target for custom full-size MouseArea panels.
+        // Do not replace click handling or create another overlapping MouseArea.
+        PlasmaCore.ToolTipArea {
+            id: virtuosoHoverTooltip
+            anchors.fill: parent
+            z: -1
+            mainText: "Corsair Virtuoso XT"
+            subText: "Battery: " + root.hoverBattery
+                + "\n" + root.hoverStatus
+                + "\nSource: OpenLinkHub detailed device API; charge is not calibrated."
+            textFormat: Text.PlainText
+            active: true
+        }
 
         Rectangle {
             anchors.fill: parent

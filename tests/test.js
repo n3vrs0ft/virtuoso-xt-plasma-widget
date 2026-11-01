@@ -168,9 +168,9 @@ test('two-second status timer and bounded request remain',()=>{assert.match(qml,
 test('tooltip shows last API response, not claimed sensor sample time',()=>{assert.match(main,/Last successful API response:/);assert.match(main,/device reports may update less often/);});
 test('click and keyboard access retained',()=>{assert.match(main,/onClicked: Qt.openUrlExternally\(root.hubUrl\)/);assert.match(main,/Keys.onReturnPressed/);});
 test('red physical mute icon retained',()=>{assert.match(main,/source: "microphone-sensitivity-muted"/);assert.match(main,/color: Kirigami.Theme.negativeTextColor/);});
-test('same public package ID with version 1.3.0',()=>{
+test('same public package ID with version 1.4.0',()=>{
     const m=JSON.parse(fs.readFileSync(path.join(base,'metadata.json'),'utf8'));
-    assert.equal(m.KPlugin.Id,'io.github.n3vrs0ft.virtuosoxt');assert.equal(m.KPlugin.Version,'1.3.0');assert.equal(m['X-Plasma-API-Minimum-Version'],'6.0');
+    assert.equal(m.KPlugin.Id,'io.github.n3vrs0ft.virtuosoxt');assert.equal(m.KPlugin.Version,'1.4.0');assert.equal(m['X-Plasma-API-Minimum-Version'],'6.0');
 });
 const icon=fs.readFileSync(path.join(base,'contents/ui/BatteryIndicator.qml'),'utf8');
 test('battery icon has explicit red/yellow/green colors independent of theme',()=>{
@@ -179,8 +179,13 @@ test('battery icon has explicit red/yellow/green colors independent of theme',()
 test('one/two/three fills supplement color',()=>{assert.match(icon,/band === "low" \? 1 : band === "medium" \? 2 : band === "high" \? 3 : 0/);assert.match(icon,/model: 3/);assert.match(icon,/index < battery.activeBars/);});
 test('unknown battery uses grey and a question mark without normal fill',()=>{assert.match(icon,/text: "\?"/);assert.match(icon,/visible: !battery.hasReading/);assert.match(icon,/visible: battery.hasReading/);});
 test('off state uses dimmed dash label while battery icon is hidden',()=>{assert.match(main,/text: "--"/);assert.match(main,/visible: root.showDisconnected/);assert.match(main,/visible: !root.showDisconnected/);assert.match(main,/opacity: hub.connected \? 1 : 0.4/);});
-test('normal panel and tooltip do not display numeric battery',()=>{assert.doesNotMatch(main,/showPercentage|root.displayText|\+ "[%]"/);assert.match(main,/Battery: " \+ root.batteryDisplay.label/);});
+test('numeric percentage is offered only in hover, with the existing band panel',()=>{assert.match(main,/hoverBattery: batteryDisplay.bars > 0/);assert.match(main,/String\(hub\.batteryLevel\)\s*\+\s*"%/);assert.match(main,/id: virtuosoHoverTooltip/);assert.match(main,/band: root.batteryDisplay.band/);});
 test('tooltip makes approximation and reconnect caveat explicit',()=>{assert.match(main,/approximate OpenLinkHub reading/);assert.match(main,/estimate may jump after reconnecting/);});
 test('accessible name includes text state, not color alone',()=>{assert.match(main,/Accessible.name:/);assert.match(main,/approximate estimate/);});
 test('new battery component has no external assets or network access',()=>{assert.doesNotMatch(icon,/XMLHttpRequest|Image\s*\{|https?:|Qt.openUrl/);});
 console.log(`\n${count} tests passed. Plasma rendering, Qt bindings, real hardware and battery accuracy are NOT tested here.`);
+
+test('service controls use only fixed URLs and do not shell out from QML',()=>{
+  for(const op of ['start','restart','enable']) assert.ok(main.includes('virtuosoxt-service://'+op));
+  assert.doesNotMatch(main,/sudo|pkexec|systemctl/);
+});

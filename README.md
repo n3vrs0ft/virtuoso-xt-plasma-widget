@@ -15,7 +15,7 @@ mute, and connection status. Click it to open OpenLinkHub.
 > Corsair product**. It does not bundle, install, or replace OpenLinkHub.
 > **HeadsetControl is not required or run by this version.**
 
-**Version:** 1.3.0 · **License:** MIT · **Maintainer:** n3vrs0ft
+**Version:** 1.4.0 · **License:** MIT · **Maintainer:** n3vrs0ft
 
 [Release downloads](https://github.com/n3vrs0ft/virtuoso-xt-plasma-widget/releases)
 · [Report a widget issue](https://github.com/n3vrs0ft/virtuoso-xt-plasma-widget/issues)
@@ -36,16 +36,14 @@ indicator does not replace the battery. An unknown mute state is shown with a
 separate `?`, never assumed unmuted. Different battery fill levels supplement
 color, and the tooltip describes the state in words.
 
-**No numeric battery percentage appears in the panel or normal tooltip.**
+**No numeric battery percentage appears in the panel itself. The hover tooltip displays OpenLinkHub’s numeric battery estimate for fresh, connected readings.**
 A change such as 49 → 48 intentionally stays yellow: both values are in the same
 band. The indicator changes band at the thresholds above, not at every raw
 battery change. These are **widget display choices, not verified Corsair factory
 low/medium/high thresholds**. In-range numeric inputs are rounded to an integer
 before classification.
 
-The tooltip shows the approximate state, source, version, and last successful
-API-response time. Clicking or activating the widget with Enter/Space opens the
-local OpenLinkHub dashboard. There is **no charging indicator** and no microphone
+The hover tooltip shows the numeric estimate, battery band, connection and microphone status, and source disclaimer. The widget tracks the last successful API-response time separately from any physical battery measurement. Clicking or activating the widget with Enter/Space opens the local OpenLinkHub dashboard. There is **no charging indicator** and no microphone
 recording, activity meter, separate daemon, or direct USB access.
 
 Mute refers to the **headset's physical microphone button**, not Discord,
@@ -92,21 +90,18 @@ permissions vary; this widget does not change them. Do not run Plasma as root
 or grant every HID device world-writable access.
 
 There is no custom host/port/authentication or headset-selection settings page
-in this version. No router port forwarding is needed. **HeadsetControl, Python,
-Node.js, curl, and the Plasma 5 Support executable engine are not runtime
-requirements of the prebuilt widget.** Python and Node.js are optional
-manual-diagnostic/development tools.
+in this version. No router port forwarding is needed. **HeadsetControl, Python, Node.js, curl, and the Plasma 5 Support executable engine are not runtime requirements for the base widget.** Python 3 and Polkit are needed only for the optional service-recovery helper. Node.js is optional for development and regression tests.
 
 ## Install
 
-Download **`virtuoso-xt-plasma-widget-1.3.0.plasmoid`** from the
+Download **`virtuoso-xt-plasma-widget-1.4.0.plasmoid`** from the
 [release assets](https://github.com/n3vrs0ft/virtuoso-xt-plasma-widget/releases).
 Save it in Downloads and **do not extract the `.plasmoid`**.
 
 Run as your normal user, **without sudo**:
 
 ```sh
-kpackagetool6 --type Plasma/Applet --install "$HOME/Downloads/virtuoso-xt-plasma-widget-1.3.0.plasmoid"
+kpackagetool6 --type Plasma/Applet --install "$HOME/Downloads/virtuoso-xt-plasma-widget-1.4.0.plasmoid"
 ```
 
 Enter panel **Edit Mode → Add Widgets**, search for **Virtuoso XT Plasma Widget**,
@@ -120,7 +115,7 @@ The package ID remains **`io.github.n3vrs0ft.virtuosoxt`**. Back up the installe
 package before upgrading when practical, then run:
 
 ```sh
-kpackagetool6 --type Plasma/Applet --upgrade "$HOME/Downloads/virtuoso-xt-plasma-widget-1.3.0.plasmoid"
+kpackagetool6 --type Plasma/Applet --upgrade "$HOME/Downloads/virtuoso-xt-plasma-widget-1.4.0.plasmoid"
 ```
 
 Plasma may retain the old widget code in memory. On systems providing
@@ -132,7 +127,7 @@ systemctl --user restart plasma-plasmashell.service
 
 The panel and desktop briefly disappear. Alternatively, save work and log out
 and back in. Do not restart KWin or delete panel configuration. Confirm the
-widget tooltip says **1.3.0**. A numeric percentage still visible in the panel
+widget reports **1.4.0**. A numeric percentage still visible in the panel
 usually means an older runtime or an old widget instance remains loaded.
 
 ## How updates work
@@ -140,7 +135,7 @@ usually means an older runtime or an old widget instance remains loaded.
 The widget discovers exactly one visible Virtuoso XT through `GET /api/`, then
 reads `GET /api/devices/<discovered-headset-serial>` approximately every **2
 seconds**. Connection, physical mute, and battery come from that same response.
-The client is unchanged from 1.2.0; only the battery presentation is different.
+The read-only OpenLinkHub API client remains unchanged from 1.2.0. Version 1.4.0 adds hover presentation and an optional service-recovery launcher.
 
 Requests are asynchronous, non-overlapping, read-only, and bounded by a
 **3-second timeout**. Errors/absence use a **5-second retry interval**. A failed
@@ -162,17 +157,14 @@ The development setup is **CachyOS / KDE Plasma 6 / Wayland**, **OpenLinkHub
 The panel matched the detailed API across a reconnect jump, and a later source
 decrease was observed. These observations are not calibration testing.
 
-Version 1.3.0 has been tested on the development system with KDE Plasma 6. The three-level battery indicator, physical mute/unmute indicator, headset off/disconnected state, reconnect behavior, and click-to-open OpenLinkHub behavior were verified on a Corsair Virtuoso XT Wireless. The battery bands reflect OpenLinkHub's reported estimate and are not independent calibration testing. Automated parser, mocked-request, threshold, and source checks also pass; those tests do not measure physical battery charge or establish compatibility with other hardware.
+**1.4.0 local verification:** The maintainer reported working battery-percentage hover, right-click service actions and administrator authentication on CachyOS / KDE Plasma 6.8.2 with OpenLinkHub 0.9.4. Automated parser, mocked-request, threshold and source checks pass; they do not test other distributions, fresh installs, Plasma rendering in an isolated environment, or physical battery calibration. See [CHANGELOG.md](CHANGELOG.md).
 
-Before publishing a release, recheck the new battery icon, physical mute, off
-state, reconnect, unavailable state, and click-to-open. Record what was actually
-tested; do not claim other hardware/distributions or all battery ranges were
-validated on real hardware just because the code tests pass.
+The 1.4.0 release candidate was installed from its .plasmoid archive on the maintainer's CachyOS system, and hover, right-click service controls, left-click, battery and mute indicators were reported working. This does not establish operation on other distributions or hardware, nor validate battery calibration.
 
 ## Troubleshooting
 
 **The battery stays yellow:** expected while the reported value remains in
-21–60. Hover for the approximate state and API-response time. The raw reading
+21–60. Hover for the approximate percentage and status. The raw reading
 can decrease without crossing a band boundary.
 
 **Grey battery with `?`:** hover for the reason. Confirm OpenLinkHub is reachable,
@@ -291,13 +283,14 @@ Developers can use Node.js 18+ and Python 3.9+:
 
 ```sh
 node tests/test.js
+python3 tests/test_helper.py
 python3 build.py
 ```
 
 Tests cover parsing, all integer band boundaries, invalid/stale/offline state,
 color/fill source definitions, and mocked execution of the actual client's
 JavaScript methods. They **do not** run Qt/Plasma or real USB hardware. `build.py`
-creates `dist/virtuoso-xt-plasma-widget-1.3.0.plasmoid` from an explicit allowlist,
+creates `dist/virtuoso-xt-plasma-widget-1.4.0.plasmoid` from an explicit allowlist,
 not arbitrary local files or repository history. The prebuilt widget does not
 need Node.js or Python at runtime.
 
@@ -315,3 +308,38 @@ This does not uninstall or modify OpenLinkHub or HeadsetControl.
 
 This widget uses the **MIT license**; see [LICENSE](LICENSE). Dependencies keep
 their own licenses; their code and binaries are not bundled or relicensed here.
+
+
+## 1.4.0 optional service recovery
+
+Right-click the widget to Start, Restart, or Enable-and-Start OpenLinkHub.
+The widget itself cannot elevate privileges and never starts services directly.
+These menu entries are displayed even if the optional helper is not installed; without it, clicking them cannot perform the service action.
+On systems using systemd and Polkit, download and extract the separate
+`virtuoso-xt-plasma-widget-1.4.0-source-and-helper.zip` release asset. Install the
+optional URI handler **as your normal user**, without sudo:
+
+```sh
+unzip virtuoso-xt-plasma-widget-1.4.0-source-and-helper.zip
+cd virtuoso-xt-plasma-widget-1.4.0
+python3 tools/install-service-helper.py
+```
+
+Actions request administrator authentication using `pkexec /usr/bin/systemctl`
+for the fixed `openlinkhub.service` only. The handler never accepts other unit
+names or arbitrary commands. This helper is optional; battery, mute and left-click
+functions continue working without it. The recovery actions will not function
+unassisted when the handler is absent.
+
+Remove the helper with `python3 tools/install-service-helper.py --uninstall`.
+This doesn't disable or uninstall OpenLinkHub. The system may retain the old URI-handler association until its MIME database is refreshed; the helper itself will be removed.
+
+Only invoke these actions when you intend to administer your local OpenLinkHub service. The custom URI scheme can also be opened by other applications, potentially causing an authentication request; reject unexpected password prompts. The helper validates the entire URI and cannot accept arbitrary systemctl arguments. Distributions not using the usual
+`/usr/bin/pkexec` and `/usr/bin/systemctl` paths are not currently supported.
+
+Hover displays the numeric OpenLinkHub estimate only for a fresh connected
+reading. It is not an independently calibrated battery measurement.
+
+The `.plasmoid` archive does not install the optional helper or request
+administrator privileges. To see changes after an upgrade, log out and back in or
+restart your user Plasma shell.

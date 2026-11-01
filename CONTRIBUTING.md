@@ -22,16 +22,17 @@ outside this widget and follow that project's reporting guidance.
 ## Changes
 
 Keep changes focused, explain the behavior and add regression tests. Run
-`node tests/test.js` and check on real hardware where possible. Clearly
+`node tests/test.js` and `python3 tests/test_helper.py` and check on real hardware where possible. Clearly
 separate mocked tests from live results. Keep the status path read-only, local
 and bounded. Do not add microphone monitoring or unnecessary USB pollers.
 Never put real identifiers in test data or claim untested headset support.
 
-Before tagging 1.3.0, validate the new icon and tooltip against the documented
-bands, then recheck physical mute, off/reconnect, unavailable state and
-click-to-open. A raw value may change within a band without changing the icon.
+For a release, validate hover percentage, coloured icon, physical mute,
+off/reconnect, unavailable state and click-to-open. On systems that support the
+optional helper, check password-protected Start / Restart / Enable actions and
+uninstall behavior. A raw value may change within a band without changing the icon.
 Use code tests for boundary cases that have not been observed on real hardware;
-do not label mocked checks as hardware validation. Record results accurately.
+do not label mocked checks as hardware validation. Record results accurately. Reject unexpected external URL handler prompts; never install passwordless polkit or sudo bypasses as part of this project.
 A changing number or a plausible color is not proof of battery calibration.
 The coarser display must not be described as fixing upstream report errors.
 
