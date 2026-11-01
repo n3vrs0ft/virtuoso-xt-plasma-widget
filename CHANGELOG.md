@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0 — battery hover tooltip and optional service recovery (2026-11-01)
+
+- Hover tooltip shows the OpenLinkHub detailed API's numeric battery estimate,
+  only when a fresh connected reading is available; preserves colour bands in panel.
+- Adds right-click Start / Restart / Enable-and-Start service actions.
+- Service operations use an optional, separately installed user-owned handler
+  and Polkit authorization. No passwordless sudo or special privilege rules.
+- Preserves physical mic mute display, existing panel layout and left-click action.
+- Tested locally on CachyOS, Plasma 6.8.2, with OpenLinkHub 0.9.4.
+- 100 Node.js regression tests and optional URI-handler unit tests; not equivalent to cross-distribution or live hardware validation.
+- The release packaging now includes a reproducible source `build.py`, correct 1.4.0 installation documentation and separate optional helper instructions.
+- Other distributions and headset connection modes remain untested.
+
 ## 1.3.0 — approximate battery icons (local validation build)
 
 - Replace the numeric battery display with a red one-bar low, yellow two-bar

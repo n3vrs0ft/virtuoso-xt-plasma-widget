@@ -1,67 +1,27 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
-"""Build only explicitly listed widget files; never archive local user data."""
+"""Reproducible, allowlisted local .plasmoid builder. Does not install software."""
 from pathlib import Path
-import hashlib
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 import json
-import re
-import stat
-import sys
-import zipfile
 
 ROOT = Path(__file__).resolve().parent
-FILES = (
-    "LICENSE",
-    "README.md",
-    "CHANGELOG.md",
-    "CONTRIBUTING.md",
-    "metadata.json",
-    "contents/code/Hub.js",
-    "contents/ui/HubStatus.qml",
-    "contents/ui/main.qml",
-    "contents/ui/BatteryIndicator.qml",
-    "tests/test.js",
-)
-
-
-def main() -> int:
-    try:
-        # Check all inputs before touching an existing build output.
-        contents = {}
-        for name in FILES:
-            source = ROOT / name
-            if not source.is_file() or source.is_symlink():
-                raise ValueError(f"Expected a regular, non-symlink source file: {name}")
-            source.resolve().relative_to(ROOT)
-            contents[name] = source.read_bytes()
-        meta = json.loads(contents["metadata.json"])
-        version = meta["KPlugin"]["Version"]
-        if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
-            raise ValueError("Expected a numeric major.minor.patch version")
-        output_dir = ROOT / "dist"
-        output_dir.mkdir(exist_ok=True)
-        destination = output_dir / f"virtuoso-xt-plasma-widget-{version}.plasmoid"
-        temporary = destination.with_suffix(destination.suffix + ".tmp")
-        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            for name in sorted(FILES):
-                info = zipfile.ZipInfo(name, date_time=(2026, 9, 19, 0, 0, 0))
-                info.create_system = 3
-                info.external_attr = (stat.S_IFREG | 0o644) << 16
-                info.compress_type = zipfile.ZIP_DEFLATED
-                archive.writestr(info, contents[name])
-        with zipfile.ZipFile(temporary) as archive:
-            bad = archive.testzip()
-            if bad is not None:
-                raise ValueError(f"Archive integrity check failed: {bad}")
-        temporary.replace(destination)
-        digest = hashlib.sha256(destination.read_bytes()).hexdigest()
-        print(f"Created {destination}")
-        print(f"SHA256 {digest}")
-        return 0
-    except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile) as exc:
-        print(f"Build failed: {exc}", file=sys.stderr)
-        return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+meta = json.loads((ROOT / 'metadata.json').read_text(encoding='utf-8'))
+assert meta['KPlugin']['Id'] == 'io.github.n3vrs0ft.virtuosoxt'
+assert meta['KPlugin']['Version'] == '1.4.0'
+FILES = [
+    'metadata.json', 'LICENSE', 'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md',
+    'contents/code/Hub.js', 'contents/ui/main.qml', 'contents/ui/HubStatus.qml',
+    'contents/ui/BatteryIndicator.qml', 'tests/test.js'
+]
+DEST = ROOT / 'dist' / 'virtuoso-xt-plasma-widget-1.4.0.plasmoid'
+DEST.parent.mkdir(parents=True, exist_ok=True)
+with ZipFile(DEST, 'w', ZIP_DEFLATED, compresslevel=9) as z:
+    for rel in sorted(FILES):
+        path = ROOT / rel
+        if not path.is_file() or path.is_symlink():
+            raise FileNotFoundError('Missing or unsafe required input: ' + rel)
+        info = ZipInfo(rel, date_time=(2026, 1, 1, 0, 0, 0))
+        info.compress_type = ZIP_DEFLATED
+        info.external_attr = (0o100644 << 16)
+        z.writestr(info, path.read_bytes())
+print('Created:', DEST)
